@@ -19,7 +19,9 @@ more will be added as I get to them.
 - Multi-satellite static geographic link budgets
 - Multi-satellite dynamic (propagated) geographic link budgets
 - Satellite constellation visualization
+- Exporting link maps to shapefile and exporting to pretty static maps
 
 # Features for Way Later:
 These would be cool, but I don't yet have the knowledge to implement:
 - Satellite constellation optimization for coverage area
+

@@ -17,11 +17,6 @@ class Window(QMainWindow):
         self.setWindowTitle(slam_variables.app_name + ": Version " + slam_variables.app_version)
         self.resize(slam_variables.app_width, slam_variables.app_height)
 
-        # # Temporary central widget
-        # self.centralWidget = QLabel("SLAM Alpha v0.1")
-        # self.centralWidget.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        # self.setCentralWidget(self.centralWidget)
-
         # Creates the menu bar and its items
         self._createActions()
         self._createMenuBar()

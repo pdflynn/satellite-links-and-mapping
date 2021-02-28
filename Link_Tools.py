@@ -17,7 +17,7 @@ import pymap3d
 # power_output: The transmitter systems output power (dBW)
 # cable_loss: Any cable attenuation from the transmitter system (dB)
 # antenna_gain: The boresight (phi=0, theta=0) gain of the transmitter system (dBi)
-def calculate_eirp(power_output, cable_loss, antenna_gain):
+def calculate_eirp(power_output, antenna_gain):
     # Vectorize
     power_output = np.array(power_output)
     cable_loss = np.array(cable_loss)

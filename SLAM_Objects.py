@@ -67,10 +67,19 @@ class LinkRegion:
 
 class Satellite:
     def __init__(self, *args):
+        """Creates a new Satellite. Pass PA output (dB) to argument 0, 
+        radiation pattern (int or float or 3d Numpy array) to argument 1"""
 
         if len(args) == 2:
+            if isinstance(args[1], int or float):
+                # User has specified boresight gain for satellite
+                # Set satellite overall radiation pattern to boresight value
+            elif isinstance(args[1], np.ndarray):
+                # User has specified 3D antenna pattern for satellite
+                # Set satellite overall radiation pattern to passed value
+            self.power_output = args[0]
 
 
 class GroundStation:
-    def __init__(self, noise_temperature, antenna_gain):
+    def __init__(self, *args):
         pass

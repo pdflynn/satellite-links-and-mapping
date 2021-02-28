@@ -1,25 +1,56 @@
 # SLAM_GUI.py
-# Last Modified: 21 February 2021
+# Last Modified: 27 February 2021
 # Description: This file is the SLAM user interface file, defining all windows, etc.
 import sys, io
 import slam_variables
 import folium
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QAction, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QAction, QHBoxLayout, QTreeView
+from PyQt5.Qt import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 
 class Window(QMainWindow):
     """Main Window."""
-    def __init__(self, parent=None):
+    def __init__(self, *args, **kwargs):
         """Initializes SLAM"""
-        super().__init__(parent)
+        super(Window, self).__init__(*args, **kwargs)
         self.setWindowTitle(slam_variables.app_name + ": Version " + slam_variables.app_version)
         self.resize(slam_variables.app_width, slam_variables.app_height)
+        layout = QHBoxLayout()
+        
 
         # Creates the menu bar and its items
         self._createActions()
         self._createMenuBar()
+
+        # Creates the object viewer
+        treeView = QTreeView()
+        treeView.setHeaderHidden(True)
+
+        treeModel = QStandardItemModel()
+        rootNode = treeModel.invisibleRootItem()
+
+        # TODO: this needs to be dynamic, of course
+        exampleLink = Item('Link', 12, set_bold=True)
+        exampleSatellite = Item('Satcom-1')
+        exampleRegion = Item('LinkRegion_Satcom-1')
+        exampleSatellite2 = Item('Satcom-2')
+        exampleRegion2 = Item('LinkRegion_Satcom-2')
+        exampleLink.appendRow(exampleSatellite)
+        exampleSatellite.appendRow(exampleRegion)
+        exampleLink.appendRow(exampleSatellite2)
+        exampleSatellite2.appendRow(exampleRegion2)
+
+        rootNode.appendRow(exampleLink)
+
+        treeView.setModel(treeModel)
+        treeView.expandAll()
+        treeView.doubleClicked.connect(self.getValue)
+
+        
+        
 
         # TODO: investigate Plotly instead of Folium
         # Creates the folium map display (TODO: move to own function)
@@ -34,8 +65,20 @@ class Window(QMainWindow):
 
         webView = QWebEngineView()
         webView.setHtml(data.getvalue().decode())
-        self.centralWidget = webView
-        self.setCentralWidget(self.centralWidget)
+        
+        # Show things
+        mainWidget = QWidget()
+        layout.addWidget(treeView)
+        layout.addWidget(webView)
+
+        mainWidget.setLayout(layout)
+
+        self.setCentralWidget(mainWidget)
+
+    def getValue(self, val):
+        print(val.data())
+        print(val.row())
+        print(val.column())
 
     def _createMenuBar(self):
         """Creates Menu Bars"""
@@ -101,7 +144,20 @@ class Window(QMainWindow):
         # Ground
         self.viewGroundSpecsAction = QAction("&View Ground Station Specs", self)
 
-    
+
+class Item(QStandardItem):
+
+    def __init__(self, txt='', font_size=12, set_bold=False, color=QColor(0, 0, 0)):
+        super().__init__()
+
+        fnt = QFont('Open Sans', font_size)
+        fnt.setBold(set_bold)
+
+        self.setEditable(False)
+        self.setForeground(color)
+        self.setFont(fnt)
+        self.setText(txt)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

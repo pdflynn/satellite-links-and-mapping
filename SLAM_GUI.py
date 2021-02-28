@@ -3,7 +3,7 @@
 # Description: This file is the SLAM user interface file, defining all windows, etc.
 import sys, io
 import slam_variables
-import folium
+import plotly.graph_objects as go
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QAction, QHBoxLayout, QTreeView
 from PyQt5.Qt import QStandardItemModel, QStandardItem
@@ -54,17 +54,15 @@ class Window(QMainWindow):
 
         # TODO: investigate Plotly instead of Folium
         # Creates the folium map display (TODO: move to own function)
-        m = folium.Map(
-            title = 'Default Map',
-            zoom_start = 13,
-            location = slam_variables.default_coord,
-        )
+        fig = go.Figure(go.Scattergeo())
+        fig.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})
         # Saves map data to an object
-        data = io.BytesIO()
-        m.save(data, close_file=False)
+        # TODO: fix plotly map
+        data = io.StringIO()
+        fig.write_html(data)
 
         webView = QWebEngineView()
-        webView.setHtml(data.getvalue().decode())
+        webView.setHtml(data.getvalue())
         
         # Show things
         mainWidget = QWidget()

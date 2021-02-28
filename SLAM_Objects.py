@@ -2,6 +2,7 @@ import numpy as np
 import pymap3d
 from scipy import constants
 
+
 class Link:
     def __init__(self, region, satellite, ground_station):
         self.region = region
@@ -9,38 +10,37 @@ class Link:
         self.ground_station = ground_station
 
 
-
-# TODO: should LinkRegion remain satellite-agnostic?
 class LinkRegion:
+    """ LinkRegion is the geographic bounds that a satellite can reach purely
+        by line-of-sight."""
 
-    # TODO: cannot have multiple constructors in Python, use *args for Pythonic implement
-    # def __init__(self, sat_lat, sat_lon, sat_alt, R=6371e3, n=201):
-    #     """Initialize LinkRegion with automatic region generation"""
-    #     self.sat_lat = sat_lat
-    #     self.sat_lon = sat_lon
-    #     self.sat_alt = sat_alt
+    def __init__(self, *args, R=6371e3, n=201):
+        """ Constructor for LinkRegion creates a new LinkRegion"""
+        if len(args) == 3:
+            self.sat_lat = args[0]
+            self.sat_lon = args[1]
+            self.sat_alt = args[2]
+            self.auto_set_boundaries(self.sat_alt, R)
 
-    # TODO: explicitly define all member variables
-    def __init__(self, lat_min, lat_max, lon_min, lon_max, n=201):
-        """Initialize LinkRegion with client-specified latitude and longitude region"""
-        self.lat_min = lat_min
-        self.lat_max = lat_max
-        self.lon_min = lon_min
-        self.lon_max = lon_max
+        else if len(args) == 4:
+            self.lat_min = args[0]
+            self.lat_max = args[1]
+            self.lon_min = args[2]
+            self.lon_max = args[3]
 
-        # Set up latitude and longitude vectors
+        else raise ValueError('Invalid number of arguments passed to LinkRegion. Either specify the region by-satellite with three arguments (lat, lon, alt) or manually with four arguments (min_lat, max_lat, min_lon, max_lon')
+
         self.lat_vec = np.linspace(self.lat_min, self.lat_max, n)
         self.lon_vec = np.linspace(self.lon_min, self.lon_max, n)
 
-    # TODO: should this be a static function?
     def get_slant_paths(self, sat_lat, sat_lon, sat_alt, datum='wgs84'):
         """Gets the slant path length from each coordinate
         in the region to the specified satellite coordinate."""
         self.slant_paths = np.zeros((len(self.lat_vec), len(self.lon_vec)))
         for i in range(0, len(self.lat_vec)):
             for j in range(0, len(self.lon_vec)):
-                self.slant_paths[i, j] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt, 
-                                                         self.lat_vec[i], self.lon_vec[j], 0, datum)
+                self.slant_paths[i, j] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt,
+                                                              self.lat_vec[i], self.lon_vec[j], 0, datum)
         return self.slant_paths
 
     def get_radio_horizon(self, alt, R=6371e3):
@@ -48,7 +48,8 @@ class LinkRegion:
         an altitude and celestial body radius"""
         # Using the Pythagorean Theorem, d^2 = 2Rh + h^2, the line of sight distance
         self.dist_los = np.sqrt(2 * R * alt + np.power(alt, 2))
-        self.dist_hoz = 4.12 * np.sqrt(alt) * 1000 # TODO: re-derive this for non-Earth celestial bodies
+        # TODO: re-derive this for non-Earth celestial bodies
+        self.dist_hoz = 4.12 * np.sqrt(alt) * 1000
 
         return self.dist_los, self.dist_hoz
 
@@ -65,12 +66,11 @@ class LinkRegion:
 
 
 class Satellite:
-    def __init__(self, power_output, antenna_gain):
-        pass
-    
+    def __init__(self, *args):
+
+        if len(args) == 2:
 
 
 class GroundStation:
     def __init__(self, noise_temperature, antenna_gain):
         pass
-    

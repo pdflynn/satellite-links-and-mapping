@@ -2,8 +2,6 @@
 # Last Modified: 21 February 2021
 # Description: This file contains several relevant functions for computing link budgets
 
-# TODO: Translate link tools over to objects, should be entirely OOP application
-
 
 import numpy as np
 from scipy import constants
@@ -63,7 +61,7 @@ def calculate_prx(gains, losses):
 # equation, based on frequency and distance.
 # dist: The distance between elements in the link, in meters
 # freq: The frequency of the carrier wave of the signal, in Hz
-def calculate_fpsl(dist, freq):
+def calculate_fspl(dist, freq):
     # Vectorize
     dist = np.array(dist)
     freq = np.array(freq)

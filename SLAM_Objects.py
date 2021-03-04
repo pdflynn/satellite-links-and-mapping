@@ -9,8 +9,10 @@ class Link:
         self.satellite = satellite
         self.ground_station = ground_station
 
-    def evaluate_simple_link(self):
-        pass
+    def evaluate_simple_link(self, freq):
+        self.region.compute_fspl(freq)
+        CN = self.satellite.get_eirp() - self.region.get_fspl() + self.ground_station.get_gt()
+        return CN
 
 class LinkRegion:
     """ LinkRegion is the geographic bounds that a satellite can reach purely
@@ -24,25 +26,27 @@ class LinkRegion:
             self.sat_alt = args[2]
             self.auto_set_boundaries(self.sat_alt, R)
 
-        else if len(args) == 4:
+        elif len(args) == 4:
             self.lat_min = args[0]
             self.lat_max = args[1]
             self.lon_min = args[2]
             self.lon_max = args[3]
 
-        else raise ValueError('Invalid number of arguments passed to LinkRegion. Either specify the region by-satellite with three arguments (lat, lon, alt) or manually with four arguments (min_lat, max_lat, min_lon, max_lon')
+        else:
+            raise ValueError('Invalid number of arguments passed to LinkRegion. Either specify the region by-satellite with three arguments (lat, lon, alt) or manually with four arguments (min_lat, max_lat, min_lon, max_lon')
 
         self.lat_vec = np.linspace(self.lat_min, self.lat_max, n)
         self.lon_vec = np.linspace(self.lon_min, self.lon_max, n)
 
-    def compute_slant_paths(self, sat_lat, sat_lon, sat_alt, datum='wgs84'):
+    # TODO: should automatically set up
+    def compute_slant_paths(self, sat_lat, sat_lon, sat_alt, datum=pymap3d.utils.Ellipsoid('wgs84')):
         """Gets the slant path length from each coordinate
         in the region to the specified satellite coordinate."""
         self.slant_paths = np.zeros((len(self.lat_vec), len(self.lon_vec)))
         for i in range(0, len(self.lat_vec)):
             for j in range(0, len(self.lon_vec)):
-                self.slant_paths[i, j] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt,
-                                                              self.lat_vec[i], self.lon_vec[j], 0, datum)
+                [az, el, r] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt, self.lat_vec[i], self.lon_vec[j], 0, datum) # TODO: add datum changing
+                self.slant_paths[i, j] = r
     
     def get_slant_paths(self):
         if self.slant_paths is None:
@@ -72,15 +76,17 @@ class LinkRegion:
         self.lon_max = self.sat_lon + deg_offset
 
     # Gets the Free Space Path Loss along each path within the slant path vector
-    def compute_fspl(self):
+    def compute_fspl(self, freq):
         if self.slant_paths is not None:
             self.FSPL = 20 * np.log10((4*np.pi*self.slant_paths*freq) / constants.c)
-        else raise ValueError("No slant paths! Must compute first.")
+        else:
+            raise ValueError("No slant paths! Must compute first.")
     
     def get_fspl(self):
         if self.FSPL is not None:
             return self.FSPL
-        else raise ValueError("FSPL Not computed!")
+        else:
+            raise ValueError("FSPL Not computed!")
 
 
 # TODO: Rename "Transmitter?"
@@ -110,7 +116,8 @@ class Satellite:
         # Account for losses, or set to zero if none specified.
         if len(args) >= 3:
             self.losses = args[2]
-        else self.losses = 0
+        else:
+            self.losses = 0
         
         # Assign power output from first argument
         self.power_output = args[0]
@@ -131,7 +138,7 @@ class Satellite:
     # and returns it as the output of the function.
     # EIRP = PA (dB) - Loss (dB) + Gain (dBi)
     def get_eirp(self):
-        return self.power_output - self.cable_loss + self.antenna_gain
+        return self.power_output - self.losses + self.radiation_pattern[0, 0] # TODO: incorporate angles and all that
 
 
 
@@ -162,13 +169,13 @@ class GroundStation:
         self.system_noise_temperature = args[0]
 
         # Gets the ground station system noise temperature
-        def get_system_noise_temperature(self):
-            return self.system_noise_temperature
+    def get_system_noise_temperature(self):
+        return self.system_noise_temperature
 
-        # Gets the radiation pattern, and accompanying phi and theta vectors
-        def get_radiation_pattern(self):
-            return self.radiation_pattern, self.phi, self.theta
+    # Gets the radiation pattern, and accompanying phi and theta vectors
+    def get_radiation_pattern(self):
+        return self.radiation_pattern, self.phi, self.theta
 
-        # Gets the G/T (gain to temperature ratio) of the receiver system
-        def get_gt(self):
-            return self.radiation_pattern - 10 * np.log10(self.system_noise_temperature)
+    # Gets the G/T (gain to temperature ratio) of the receiver system
+    def get_gt(self):
+        return self.radiation_pattern[0,0] - 10 * np.log10(self.system_noise_temperature) # TODO: pattern

@@ -5,7 +5,7 @@ import sys, io
 import slam_variables
 import folium
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QAction, QHBoxLayout, QTreeView
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QAction, QHBoxLayout, QTreeView, QToolBar
 from PyQt5.Qt import QStandardItemModel, QStandardItem
 from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -20,55 +20,21 @@ class Window(QMainWindow):
         self.resize(slam_variables.app_width, slam_variables.app_height)
         layout = QHBoxLayout()
         
-
         # Creates the menu bar and its items
         self._createActions()
         self._createMenuBar()
-
-        # Creates the object viewer
-        treeView = QTreeView()
-        treeView.setHeaderHidden(True)
-
-        treeModel = QStandardItemModel()
-        rootNode = treeModel.invisibleRootItem()
-
-        # TODO: this needs to be dynamic, of course
-        exampleLink = Item('Link', 12, set_bold=True)
-        exampleSatellite = Item('Satcom-1')
-        exampleRegion = Item('LinkRegion_Satcom-1')
-        exampleSatellite2 = Item('Satcom-2')
-        exampleRegion2 = Item('LinkRegion_Satcom-2')
-        exampleLink.appendRow(exampleSatellite)
-        exampleSatellite.appendRow(exampleRegion)
-        exampleLink.appendRow(exampleSatellite2)
-        exampleSatellite2.appendRow(exampleRegion2)
-
-        rootNode.appendRow(exampleLink)
-
-        treeView.setModel(treeModel)
-        treeView.expandAll()
-        treeView.doubleClicked.connect(self.getValue)
-
         
-        
-        m = folium.Map(
-            location=[37.210537, -80.39623], zoom_start=5
-        )
+        # Create widgets using self-defined functions
+        mapView = self._createMap() # Create the main map
+        treeView = self._createItemViewer() # Create the item tree viewer
 
-        data = io.BytesIO()
-        m.save(data, close_file=False)
-        
-
-        webView = QWebEngineView()
-        webView.setHtml(data.getvalue().decode())
-        
-        # Show things
+        # Create the main widget and add sub-widgets to it
         mainWidget = QWidget()
-        layout.addWidget(treeView)
-        layout.addWidget(webView)
-
+        layout.addWidget(treeView, 1)
+        layout.addWidget(mapView, 3)
+        # Set the layout of the main widget to layout, a QHBoxLayout
         mainWidget.setLayout(layout)
-
+        # Add the main widget to the GUI
         self.setCentralWidget(mainWidget)
 
     def getValue(self, val):
@@ -76,6 +42,7 @@ class Window(QMainWindow):
         print(val.row())
         print(val.column())
 
+### HELPER FUNCTIONS TO CREATE GUI ###
     def _createMenuBar(self):
         """Creates Menu Bars"""
         
@@ -108,10 +75,10 @@ class Window(QMainWindow):
         gisMenu.addAction(self.exportShapefileAction)
 
         # Populate Satellite menu
-        satelliteMenu.addAction(self.viewSatSpecsAction)
+        satelliteMenu.addAction(self.newSatellite)
 
         # Populate Ground menu
-        groundMenu.addAction(self.viewGroundSpecsAction)
+        groundMenu.addAction(self.newGroundStation)
 
     def _createActions(self):
         """Creates Actions for Menu Bar"""
@@ -135,11 +102,38 @@ class Window(QMainWindow):
         self.exportShapefileAction = QAction("&Export Shapefile")
 
         # Satellite
-        self.viewSatSpecsAction = QAction("&View Satellite Specs", self)
+        self.newSatellite = QAction("&New", self)
 
         # Ground
-        self.viewGroundSpecsAction = QAction("&View Ground Station Specs", self)
+        self.newGroundStation = QAction("&New", self)
 
+    def _createItemViewer(self):
+        # Creates the object viewer
+        treeView = QTreeView()
+        treeView.setHeaderHidden(True)
+
+        treeModel = QStandardItemModel()
+        rootNode = treeModel.invisibleRootItem()
+
+        # TODO: this needs to be dynamic, of course
+        exampleLink = Item('Link', 12, set_bold=True)
+        
+
+        return treeView
+
+    def _createMap(self):
+        m = folium.Map(
+            location=[37.210537, -80.39623], zoom_start=5
+        )
+
+        data = io.BytesIO()
+        m.save(data, close_file=False)
+        
+
+        webView = QWebEngineView()
+        webView.setHtml(data.getvalue().decode())
+
+        return webView
 
 class Item(QStandardItem):
 
@@ -153,6 +147,7 @@ class Item(QStandardItem):
         self.setForeground(color)
         self.setFont(fnt)
         self.setText(txt)
+    
 
 
 if __name__ == "__main__":

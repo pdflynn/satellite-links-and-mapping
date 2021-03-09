@@ -3,6 +3,18 @@ import pymap3d
 from scipy import constants
 
 
+class Project:
+    self.link = Link(None, None, None)
+    self.satellites = set()
+    self.ground_stations = set()
+    
+    def __init__(self, filepath):
+        pass
+
+
+
+
+
 class Link:
     def __init__(self, region, satellite, ground_station):
         self.region = region

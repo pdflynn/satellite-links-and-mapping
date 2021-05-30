@@ -1,0 +1,42 @@
+rewrite_notes.txt
+
+
+This application needs a serious overhaul. There are some difficulties with specifics, but 
+the overall approach needs some work too.
+
+
+OOP or no OOP?
+Even though I am unfamiliar with Python's OOP...probably OOP is the way to go. It will make
+it much easier in the long term to add in more features.
+
+
+Overall approach
+Types of links we want to be able to evaluate:
+i. Uplink
+    - Consists of TERMINAL -> SATELLITE
+ii. Downlink
+    - Consists of SATELLITE -> TERMINAL
+iii. Crosslink
+    - Consists of SATELLITE -> SATELLITE
+iv. FORWARD PATH
+    - Consists of UPLINK + (optional crosslink) + DOWNLINK
+    - For this case, the Uplink TERMINAL refers to a "gateway" owned by the sat operator
+    - For this case, the Uplink SATELLITE is in RECEIVE mode
+    - For this case, the CROSSLINK is optional but consists of two satellites
+    - For this case, the Downlink SATELLITE is in TRANSMIT mode
+    - For this case, the Downlink TERMINAL is a USER terminal, in RECEIVE mode
+v. RETURN PATH
+    - Opposite of forward path
+
+1. COLLECT DATA: all user inputs:
+    (First input: type of link)
+    1a. Satellite
+    - Satellite orbit information (or static lat/lon/alt)
+    - Satellite antenna pattern + power output information
+    - Satellite's supported MODCODs 
+    - The area that the satellite can view - should this be its own object (LinkRegion)?
+    - (Advanced) Satellite pointing information (assume nadir for basic case)
+    - (Advanced) Satellite crosslink information
+    1b. Terminal
+    - Only terminal hardware information. 
+    - 

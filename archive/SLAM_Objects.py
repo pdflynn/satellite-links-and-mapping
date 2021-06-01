@@ -3,14 +3,13 @@ import pymap3d
 from scipy import constants
 
 
-class Project:
-    self.link = Link(None, None, None)
-    self.satellites = set()
-    self.ground_stations = set()
+# class Project:
+#     self.link = Link(None, None, None)
+#     self.satellites = set()
+#     self.ground_stations = set()
     
-    def __init__(self, filepath):
-        pass
-
+#     def __init__(self, filepath):
+#         pass
 
 
 
@@ -50,17 +49,22 @@ class LinkRegion:
         self.lat_vec = np.linspace(self.lat_min, self.lat_max, n)
         self.lon_vec = np.linspace(self.lon_min, self.lon_max, n)
 
-    # TODO: should automatically set up
     def compute_slant_paths(self, sat_lat, sat_lon, sat_alt, datum=pymap3d.utils.Ellipsoid('wgs84')):
         """Gets the slant path length from each coordinate
         in the region to the specified satellite coordinate."""
         self.slant_paths = np.zeros((len(self.lat_vec), len(self.lon_vec)))
+        # Bad O(n^2) double nested for loop - deprecated
+        # for i in range(0, len(self.lat_vec)):
+        #     for j in range(0, len(self.lon_vec)):
+        #         [az, el, r] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt, self.lat_vec[i], self.lon_vec[j], 0, datum) # TODO: add datum changing
+        #         self.slant_paths[i, j] = r
+        # O(n) algorithm with vectorized geodetic2aer
         for i in range(0, len(self.lat_vec)):
-            for j in range(0, len(self.lon_vec)):
-                [az, el, r] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt, self.lat_vec[i], self.lon_vec[j], 0, datum) # TODO: add datum changing
-                self.slant_paths[i, j] = r
+            [az, el, r] = pymap3d.geodetic2aer(sat_lat, sat_lon, sat_alt, self.lat_vec[i], self.lon_vec, 0, datum) # TODO: add datum changing
+            self.slant_paths[i] = r
     
     def get_slant_paths(self):
+        """Returns the slant paths associated with the LinkRegion"""
         if self.slant_paths is None:
             raise ValueError('No slant paths! Compute them.')
         else:

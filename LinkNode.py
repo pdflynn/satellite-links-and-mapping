@@ -48,3 +48,22 @@ class TransmitTerminal(Transmitter):
         self.type = "tx_terminal"
         self.tx_pattern = antenna_pattern
         self.peak_power_output = peak_power_output
+
+class Receiver(LinkNode):
+    """ Receiver is the receive node in any type of link. The receive 
+        node, like the transmit node, has an associated antenna pattern."""
+    def __init__(self, antenna_pattern):
+        """ Initializes a new Receiver with specified antenna pattern."""
+        self.type = "rx_generic"
+        self.rx_pattern = antenna_pattern
+
+class ReceiveSatellite(Receiver):
+    """ ReceiveSatellite represents a satellite with specified orbit and
+        receiving antenna pattern."""
+    def __init__(self, antenna_pattern):
+        self.rx_pattern = antenna_pattern
+
+class ReceiveTerminal(Receiver):
+
+    def __init__(self, antenna_pattern):
+        pass

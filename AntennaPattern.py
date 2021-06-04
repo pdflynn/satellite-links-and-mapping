@@ -1,6 +1,7 @@
 # AntennaPattern.py
 # Author: Danny Flynn
 # Date Modified: 20210601
+
 from enum import Enum
 import numpy as np
 

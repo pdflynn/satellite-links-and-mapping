@@ -27,7 +27,7 @@ class AntennaPattern():
         if len(args) == 0:
             self.phi_range = np.linspace(0, 360, 361)
             self.theta_range = np.linspace(0, 180, 181)
-            self.pattern = np.zeros(len(self.phi_range), len(self.theta_range))
+            self.pattern = np.zeros((len(self.phi_range), len(self.theta_range)))
         elif len(args) == 1:
             filepath = args[0]
             self.import_antenna_pattern(filepath)
@@ -37,16 +37,17 @@ class AntennaPattern():
             self.pattern = args[2]
 
     def import_antenna_pattern(self, filepath):
+        # TODO: Implement HFSS, MATLAB imports
         pass
     
     def get_phi_range(self):
-        pass
+        return self.phi_range
 
     def get_theta_range(self):
-        pass
+        return self.theta_range
 
     def get_gain_pattern(self):
-        pass
+        return self.pattern
 
     def is_whole_sphere(self):
         pass

@@ -1,6 +1,7 @@
 # Link.py
 # Author: Danny Flynn
 # Date Modified: 20210603
+from AntennaPattern import *
 
 class LinkHop():
     """ LinkHop represents a single transmit and receive path. For example,

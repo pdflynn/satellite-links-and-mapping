@@ -4,6 +4,7 @@
 
 from enum import Enum
 import numpy as np
+import math
 
 class Polarization(Enum):
     LINEAR = 0
@@ -28,17 +29,31 @@ class AntennaPattern():
             self.phi_range = np.linspace(0, 360, 361)
             self.theta_range = np.linspace(0, 180, 181)
             self.pattern = np.zeros((len(self.phi_range), len(self.theta_range)))
-        elif len(args) == 1:
-            filepath = args[0]
-            self.import_antenna_pattern(filepath)
+        elif len(args) == 2: # Cosine antenna with max Gain 
+            self.phi_range = np.linspace(0, 360, 361)
+            self.theta_range = np.linspace(0, 180, 181)
+            order = args[0]
+            gain = args[1]
+            cos_th1 = np.cos(self.theta_range * (math.pi/180))
+            cos_n = np.power(cos_th1, order)
+            # For all phi cuts, same deal
+            patt = np.zeros((len(self.phi_range), len(self.theta_range)), dtype=float)
+            for i in range(0, len(self.phi_range)):
+                patt[i, :] = gain * cos_n
+            self.pattern = patt
+
         elif len(args) == 3:
+            filepath = args[0]
+            self.phi_range = args[1]
+            self.theta_range = args[2]
+            self.import_antenna_known_angles(filepath)
+        elif len(args) == 4:
             self.phi_range = args[0]
             self.theta_range = args[1]
             self.pattern = args[2]
 
-    def import_antenna_pattern(self, filepath):
-        # TODO: Implement HFSS, MATLAB imports
-        pass
+    def import_antenna_known_angles(self, filename):
+        self.pattern = np.genfromtxt(filename, delimiter=',')
     
     def get_phi_range(self):
         return self.phi_range

@@ -2,7 +2,7 @@ from LinkRegion import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-reg = LinkRegion(0, 0, 100e3, 250)
+reg = LinkRegion(0, 0, 500e3, 250)
 # reg.plot_region(100)
 
 isotropic = AntennaPattern()

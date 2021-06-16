@@ -1,6 +1,6 @@
 # LinkRegion.py
 # Author: Danny Flynn
-# Date Modified: 20210611
+# Date Modified: 20210615
 from AntennaPattern import *
 
 from astropy import constants as const
@@ -8,16 +8,21 @@ import pymap3d as pm
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Big TODOs
+# - Implement support for other celestial bodies besides Earth
+# - With this in mind...need to write my own geodetic2aer
 
 class LinkRegion():
     # TODO: Swap lat0, lon0, alt0 to a Satellite object
     def __init__(self, lat0: float, lon0: float, alt0: float, resolution: int):
         """ Initializes a new LinkRegion based on a center point (satellite location) """
+
         # Suppose a tangent line exists along an Equatorial or Polar spherical Earth
         # Then for Latitude, the latitude angle alpha is between a line along the
         # zenith originating at the center of the Earth and a line originating at
         # the center of the Earth and terminating at the point where the tangent
         # line intersects the Earth. Likewise for longitude but with R_Earth different.
+        # TODO: This shouldn't be hard-coded once I add other celestial body support
         x_o_lat = 6357e3 + alt0
         x_o_lon = 6378e3 + alt0
 
@@ -31,9 +36,9 @@ class LinkRegion():
         self.lat_vec = np.linspace(lat0 - alpha, lat0 + alpha, resolution)
         self.lon_vec = np.linspace(lon0 - beta, lon0 + beta, resolution)
 
-        # Compute satellite observerkm to deg latitude's look angle to the region
+        # Compute satellite observer to deg latitude's look angle to the region
         # Done in O(n) time complexity, better than looping through both latitudes and
-        # longitudes as pymap3d doesn't seem to support that
+        # longitudes as pymap3d doesn't seem to support full vectorization
         self.az_look_angles = np.zeros((len(self.lat_vec), len(self.lon_vec)), dtype=float)
         self.el_look_angles = np.zeros((len(self.lat_vec), len(self.lon_vec)), dtype=float)
         self.slant_path_lengths = np.zeros((len(self.lat_vec), len(self.lon_vec)), dtype=float)

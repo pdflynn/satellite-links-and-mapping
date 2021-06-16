@@ -2,6 +2,7 @@
 # Author: Danny Flynn
 # Date Modified: 20210603
 from AntennaPattern import *
+from LinkNode import *
 
 class LinkHop():
     """ LinkHop represents a single transmit and receive path. For example,
@@ -9,7 +10,7 @@ class LinkHop():
         a satellite and a satellite, or between a satellite and a ground
         station. LinkHop requires at minimum one TRANSMITTER object and one
         RECEIVER object, as well as information about the channel. """
-    def __init__(self, transmitter, channel, receiver):
+    def __init__(self, transmitter: Transmitter, receiver: Receiver, channel: Channel):
         """ Initializes a new LinkHop consisting of a transmitter, channel,
             and receiver. """
         self.transmitter = transmitter

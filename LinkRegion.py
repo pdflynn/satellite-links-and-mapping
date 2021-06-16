@@ -13,13 +13,25 @@ class LinkRegion():
     # TODO: Swap lat0, lon0, alt0 to a Satellite object
     def __init__(self, lat0: float, lon0: float, alt0: float, resolution: int):
         """ Initializes a new LinkRegion based on a center point (satellite location) """
-        # Compute approximate line of sight distance (update in future versions)
-        d_los = np.sqrt(2 * const.R_earth.value * alt0)
-        theta_los = d_los / const.R_earth.value
-        self.lat_vec = np.linspace(lat0 - theta_los, lat0 + theta_los, resolution)
-        self.lon_vec = np.linspace(lon0 - theta_los, lon0 + theta_los, resolution)
+        # Suppose a tangent line exists along an Equatorial or Polar spherical Earth
+        # Then for Latitude, the latitude angle alpha is between a line along the
+        # zenith originating at the center of the Earth and a line originating at
+        # the center of the Earth and terminating at the point where the tangent
+        # line intersects the Earth. Likewise for longitude but with R_Earth different.
+        x_o_lat = 6357e3 + alt0
+        x_o_lon = 6378e3 + alt0
 
-        # Compute satellite observer's look angle to the region
+        # Fixed this: re-derived formula and it's arcsin, not sin...
+        alpha = np.rad2deg(np.arcsin(np.sqrt(np.power(x_o_lat, 2) - np.power(6357e3, 2)) / x_o_lat))
+        beta  = np.rad2deg(np.arcsin(np.sqrt(np.power(x_o_lon, 2) - np.power(6378e3, 2)) / x_o_lon))
+        
+        print("alpha: " + str(alpha))
+        print("beta: " + str(beta))
+
+        self.lat_vec = np.linspace(lat0 - alpha, lat0 + alpha, resolution)
+        self.lon_vec = np.linspace(lon0 - beta, lon0 + beta, resolution)
+
+        # Compute satellite observerkm to deg latitude's look angle to the region
         # Done in O(n) time complexity, better than looping through both latitudes and
         # longitudes as pymap3d doesn't seem to support that
         self.az_look_angles = np.zeros((len(self.lat_vec), len(self.lon_vec)), dtype=float)
@@ -35,21 +47,21 @@ class LinkRegion():
     def plot_region(self, resolution: int):
         """ Creates plots showing the elevation angles, azimuth angles, and slant path
             lengths seen by the observing satellite of the link region """
-        plot1 = plt.figure(1)
+        plot1 = plt.figure(1, dpi=300)
         plt.contourf(self.lat_vec, self.lon_vec, self.el_look_angles, resolution, cmap='RdGy')
         plt.colorbar()
         plt.title("Elevation Angles Seen by Sat")
         plt.ylabel("Latitude (deg)")
         plt.xlabel("Longitude (deg)")
 
-        plot2 = plt.figure(2)
+        plot2 = plt.figure(2, dpi=300)
         plt.contourf(self.lat_vec, self.lon_vec, self.az_look_angles, resolution, cmap='GnBu')
         plt.colorbar()
         plt.title("Azimuth Angles Seen by Sat")
         plt.ylabel("Latitude (deg)")
         plt.xlabel("Longitude (deg)")
 
-        plot3 = plt.figure(3)
+        plot3 = plt.figure(3, dpi=300)
         plt.contourf(self.lat_vec, self.lon_vec, self.slant_path_lengths, resolution, cmap='Greens')
         plt.colorbar()
         plt.title("Slant Path Ranges")
